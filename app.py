@@ -105,9 +105,9 @@ def create_dataset(size, *inputs):
         image_file_name = os.path.basename(new_image_path)
         caption_file_name = os.path.splitext(image_file_name)[0] + ".txt"
         caption_path = os.path.join(destination_folder, caption_file_name)
-        print(f"image_path={new_image_path}, caption_path = {caption_path}")
+        print(f"image_path={new_image_path}, caption_path = {caption_path}, original_caption={original_caption}")
         with open(caption_path, 'w') as file:
-            file.write(sh)
+            file.write(original_caption)
 
     print("destination_folder {destination_folder}")
     return destination_folder
@@ -174,7 +174,7 @@ def recursive_update(d, u):
     return d
 
 def gen_sh(
-    lora_name,
+    output_name,
     resolution,
     seed,
     workers,
@@ -186,7 +186,6 @@ def gen_sh(
     timestep_sampling,
     guidance_scale,
 ):
-    output_name = slugify(lora_name)
 
     line_break = "\\"
     file_type = "sh"
@@ -304,8 +303,9 @@ def start_training(
     os.makedirs("fluxtrainer/outputs", exist_ok=True)
 
     # generate accelerate script
+    output_name = slugify(lora_name)
     gen_sh(
-      lora_name,
+      output_name,
       resolution,
       seed, workers,
       learning_rate,
@@ -319,7 +319,7 @@ def start_training(
     # generate toml
     gen_toml(dataset_folder, resolution, class_tokens)
 
-    return f"Training completed successfully. Model saved as {slugged_lora_name}"
+    return f"Training completed successfully. Model saved as {output_name}"
 
 
 theme = gr.themes.Monochrome(
