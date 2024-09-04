@@ -1,6 +1,7 @@
 import os
 os.environ["HF_HUB_ENABLE_HF_TRANSFER"] = "1"
 import sys
+import subprocess
 
 # Add the current working directory to the Python path
 sys.path.insert(0, os.getcwd())
@@ -292,6 +293,26 @@ keep_tokens = 1
     with open('fluxtrainer/dataset.toml', 'w') as file:
         file.write(toml)
 
+
+
+def train():
+    if sys.platform == "win32":
+        command = "fluxtrainer/train.bat"
+    else:
+        command = "bash fluxtrainer/train.sh"
+    print(f"command {command}")
+    # Use Popen to run the command and capture output in real-time
+    with subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True) as process:
+        for line in process.stdout:
+            print(line, end='')  # Print each line of output as it is received
+
+    # Check for any errors after completion
+    process.communicate()  # Wait for the process to complete
+    if process.returncode != 0:
+        return f"Command failed with return code {process.returncode}")
+    else:
+        return "Train successful"
+
 def start_training(
     lora_name,
     resolution,
@@ -329,6 +350,8 @@ def start_training(
     )
     # generate toml
     gen_toml(dataset_folder, resolution, class_tokens)
+
+    train()
 
     return f"Training completed successfully. Model saved as {output_name}"
 
