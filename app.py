@@ -174,7 +174,7 @@ def recursive_update(d, u):
     return d
 
 
-def resolve_path(p)
+def resolve_path(p):
     current_dir = os.path.dirname(os.path.abspath(__file__))
     return os.path.join(current_dir, p)
 
