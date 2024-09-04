@@ -420,6 +420,7 @@ with gr.Blocks(theme=theme, css=css) as demo:
         outputs=[captioning_area, sample, start]
     )
 
+    print("caption_list={caption_list}")
     start.click(fn=create_dataset, inputs=[resolution, images] + caption_list, outputs=dataset_folder).then(
         fn=start_training,
         inputs=[
