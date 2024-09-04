@@ -284,7 +284,7 @@ batch_size = 1
 keep_tokens = 1
 
   [[datasets.subsets]]
-  image_dir = {resolve_path(dataset_folder)}
+  image_dir = '{resolve_path(dataset_folder)}'
   class_tokens = '{class_tokens}'
   num_repeats = 20
 """
