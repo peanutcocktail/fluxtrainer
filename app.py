@@ -158,23 +158,20 @@ def recursive_update(d, u):
             d[k] = v
     return d
 
-def gen_sh():
+def gen_sh(
+    lora_name,
+    resolution,
+    seed,
+    workers,
+    learning_rate,
+    network_dim,
+    model_to_train,
+    max_train_epochs,
+    save_every_n_epochs,
+    timestep_sampling,
+    guidance_scale,
+):
     output_name = slugify(lora_name)
-
-    resolution = 512
-    seed = 42
-    workers = 2
-
-    learning_rate = "1e-4"
-    optimizer_type = "adamw8bit"
-    image_dir = '/Users/x/pinokio/api/fluxtrain/app/dataset/images'
-    class_tokens = "itojunji style"
-
-    max_train_epochs = 16
-    save_every_n_epochs = 4
-    guidance_scale = 1.0
-
-    timestep_sampling = "sigmoid"
 
     line_break = "\\"
     file_type = "sh"
@@ -182,11 +179,14 @@ def gen_sh():
         line_break = "^"
         file_type = "bat"
 
-    pretrained_model_path = "../models/flux1-dev.sft"
-    clip_path = "../models/clip_l.safetensors"
-    t5_path = "../models/t5xxl_fp16.safetensors"
-    ae_path = "../models/ae.sft"
-    output_dir "../outputs"
+    if model_to_train == "dev":
+        pretrained_model_path = "fluxtrainer/models/flux1-dev.sft"
+    elif model_to_train == "schnell":
+        pretrained_model_path = "fluxtrainer/models/flux1-schnell.sft"
+    clip_path = "fluxtrainer/models/clip_l.safetensors"
+    t5_path = "fluxtrainer/models/t5xxl_fp16.safetensors"
+    ae_path = "fluxtrainer/models/ae.sft"
+    output_dir = "fluxtrainer/outputs"
 
     ############# Optimizer args ########################
 
@@ -223,6 +223,7 @@ accelerate launch {line_break}
   --save_precision bf16 {line_break}
   --network_module networks.lora_flux {line_break}
   --network_dim 4 {line_break}
+  --optimizer_type adamw8bit
   --learning_rate {learning_rate} {line_break}
   --network_train_unet_only {line_break}
   --cache_text_encoder_outputs {line_break}
@@ -244,7 +245,11 @@ accelerate launch {line_break}
     with open(f"fluxtrainer/train.{file_type}", 'w') as file:
         file.write(sh)
 
-def gen_toml():
+def gen_toml(
+  dataset_folder,
+  resolution,
+  class_tokens
+):
     toml = f"""
 [general]
 shuffle_caption = false
@@ -257,7 +262,7 @@ batch_size = 1
 keep_tokens = 1
 
   [[datasets.subsets]]
-  image_dir = {image_dir}
+  image_dir = {dataset_folder}
   class_tokens = '{class_tokens}'
   num_repeats = 20
 """
@@ -266,8 +271,10 @@ keep_tokens = 1
 
 def start_training(
     lora_name,
-    concept_sentence,
-    steps,
+    resolution,
+    seed,
+    class_tokens,
+#    steps,
     learning_rate,
     network_dim,
     model_to_train,
@@ -278,12 +285,13 @@ def start_training(
 ):
     # write custom script and toml
     os.makedirs("fluxtrainer", exist_ok=True)
+    os.makedirs("fluxtrainer/models", exist_ok=True)
+    os.makedirs("fluxtrainer/outputs", exist_ok=True)
 
     # generate accelerate script
-    gen_sh()
-
+    gen_sh(lora_name, resolution, seed, workers, learning_rate, model_to_train, max_train_epochs, save_every_n_epochs, timestep_sampling, guidance_scale)
     # generate toml
-    gen_toml()
+    gen_toml(dataset_folder, resolution, class_tokens)
 
     return f"Training completed successfully. Model saved as {slugged_lora_name}"
 
@@ -302,7 +310,7 @@ with gr.Blocks(theme=theme, css=css) as demo:
                 info="This has to be a unique name",
                 placeholder="e.g.: Persian Miniature Painting style, Cat Toy",
             )
-            concept_sentence = gr.Textbox(
+            class_tokens = gr.Textbox(
                 label="Trigger word/sentence",
                 info="Trigger word or sentence to be used",
                 placeholder="uncommon word like p3rs0n or trtcrd, or sentence like 'in the style of CNSTLL'",
@@ -349,13 +357,26 @@ with gr.Blocks(theme=theme, css=css) as demo:
                             output_components.append(locals()[f"image_{i}"])
                             output_components.append(locals()[f"caption_{i}"])
                             caption_list.append(locals()[f"caption_{i}"])
+        
 
         with gr.Accordion("Advanced options", open=False):
-            steps = gr.Number(label="Steps", value=1000, minimum=1, maximum=10000, step=1)
-            learning_rate = gr.Number(label="Learning Rate", value=4e-4, minimum=1e-6, maximum=1e-3, step=1e-6)
+            #resolution = gr.Number(label="Resolution", value=512, minimum=512, maximum=1024, step=512)
+            seed = gr.Number(label="Seed", value=42)
+            workers = gr.Number(label="Workers", value=2)
+            learning_rate = gr.Number(label="Learning Rate", value=1e-4, minimum=1e-6, maximum=1e-3, step=1e-6)
+            #learning_rate = gr.Number(label="Learning Rate", value=4e-4, minimum=1e-6, maximum=1e-3, step=1e-6)
+
+            max_train_epochs = gr.Number(label="Max Train Epochs", value=16)
+            save_every_n_epochs = gr.Number(label="Save every N epochs", value=4)
+
+            guidance_scale = gr.Number(label="Guidance Scale", value=1.0)
+
+            timestep_sampling = gr.Textbox(label="Timestep Sampling", value="sigmoid")
+
+#            steps = gr.Number(label="Steps", value=1000, minimum=1, maximum=10000, step=1)
             network_dim = gr.Number(label="LoRA Rank", value=4, minimum=4, maximum=128, step=4)
             model_to_train = gr.Radio(["dev", "schnell"], value="dev", label="Model to train")
-            size = gr.Radio([512, 1024], value=512, label="Resize dataset images")
+            resolution = gr.Radio([512, 1024], value=512, label="Resize dataset images")
 
         with gr.Accordion("Sample prompts (optional)", visible=False) as sample:
             gr.Markdown(
@@ -396,8 +417,10 @@ with gr.Blocks(theme=theme, css=css) as demo:
         fn=start_training,
         inputs=[
             lora_name,
+            resolution,
+            seed,
             concept_sentence,
-            steps,
+#            steps,
             learning_rate,
             network_dim,
             model_to_train,
