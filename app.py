@@ -305,7 +305,7 @@ def train():
 
     with subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, env=env) as process:
         for line in process.stdout:
-            print(line, end='')  # Print each line of output as it is received
+            print(line.decode('utf-8', errors='replace'), end='')
 
     # Check for any errors after completion
     process.communicate()  # Wait for the process to complete
