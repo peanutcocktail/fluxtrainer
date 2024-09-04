@@ -214,12 +214,12 @@ def gen_sh(
     if vram == "16G":
         # 16G VRAM
         optimizer = f"""--optimizer_type adafactor {line_break}
---optimizer_args "relative_step=False" "scale_parameter=False" "warmup_init=False"
+  --optimizer_args "relative_step=False" "scale_parameter=False" "warmup_init=False"
 """
     elif vram == "12G":
     # 12G VRAM
         optimizer = f"""--optimizer_type adafactor {line_break}
---optimizer_args "relative_step=False" "scale_parameter=False" "warmup_init=False" --split_mode --network_args "train_blocks=single" --lr_scheduler constant_with_warmup --max_grad_norm 0.0
+  --optimizer_args "relative_step=False" "scale_parameter=False" "warmup_init=False" --split_mode --network_args "train_blocks=single" --lr_scheduler constant_with_warmup --max_grad_norm 0.0
 """
     else:
         # 24G+ VRAM
@@ -245,7 +245,7 @@ def gen_sh(
   --save_precision bf16 {line_break}
   --network_module networks.lora_flux {line_break}
   --network_dim 4 {line_break}
-  --optimizer_type adamw8bit
+  --optimizer_type adamw8bit {line_break}
   --learning_rate {learning_rate} {line_break}
   --network_train_unet_only {line_break}
   --cache_text_encoder_outputs {line_break}
