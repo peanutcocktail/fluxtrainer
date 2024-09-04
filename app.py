@@ -264,7 +264,7 @@ def gen_sh(
   {optimizer}
 """
 
-    with open(f"fluxtrainer/train.{file_type}", 'w') as file:
+    with open(f"fluxtrainer/train.{file_type}", 'w', encoding="utf-8") as file:
         file.write(sh)
 
 def gen_toml(
@@ -288,7 +288,7 @@ keep_tokens = 1
   class_tokens = '{class_tokens}'
   num_repeats = 20
 """
-    with open('fluxtrainer/dataset.toml', 'w') as file:
+    with open('fluxtrainer/dataset.toml', 'w', encoding="utf-8") as file:
         file.write(toml)
 
 
