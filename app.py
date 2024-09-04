@@ -309,7 +309,7 @@ with gr.Blocks(theme=theme, css=css) as demo:
                 info="This has to be a unique name",
                 placeholder="e.g.: Persian Miniature Painting style, Cat Toy",
             )
-            class_tokens = gr.Textbox(
+            concept_sentence = gr.Textbox(
                 label="Trigger word/sentence",
                 info="Trigger word or sentence to be used",
                 placeholder="uncommon word like p3rs0n or trtcrd, or sentence like 'in the style of CNSTLL'",
