@@ -300,7 +300,10 @@ def train():
         command = f"bash {resolve_path('fluxtrainer/train.sh')}"
     print(f"command {command}")
     # Use Popen to run the command and capture output in real-time
-    with subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True) as process:
+    env = os.environ.copy()
+    env['PYTHONIOENCODING'] = 'utf-8'
+
+    with subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, env=env) as process:
         for line in process.stdout:
             print(line, end='')  # Print each line of output as it is received
 
