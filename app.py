@@ -213,14 +213,12 @@ def gen_sh(
 
     if vram == "16G":
         # 16G VRAM
-        optimizer = f"""
---optimizer_type adafactor
+        optimizer = f"""--optimizer_type adafactor {line_break}
 --optimizer_args "relative_step=False" "scale_parameter=False" "warmup_init=False"
 """
     elif vram == "12G":
     # 12G VRAM
-        optimizer = f"""
---optimizer_type adafactor
+        optimizer = f"""--optimizer_type adafactor {line_break}
 --optimizer_args "relative_step=False" "scale_parameter=False" "warmup_init=False" --split_mode --network_args "train_blocks=single" --lr_scheduler constant_with_warmup --max_grad_norm 0.0
 """
     else:
@@ -297,9 +295,9 @@ keep_tokens = 1
 
 def train():
     if sys.platform == "win32":
-        command = "fluxtrainer/train.bat"
+        command = f"{resolve_path('fluxtrainer/train.bat')}"
     else:
-        command = "bash fluxtrainer/train.sh"
+        command = f"bash {resolve_path('fluxtrainer/train.sh')}"
     print(f"command {command}")
     # Use Popen to run the command and capture output in real-time
     with subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True) as process:
