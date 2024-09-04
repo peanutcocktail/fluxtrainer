@@ -114,15 +114,19 @@ def create_dataset(size, *inputs):
 
 
 def run_captioning(images, concept_sentence, *captions):
+    print(f"run_captioning")
     #Load internally to not consume resources for training
     device = "cuda" if torch.cuda.is_available() else "cpu"
     torch_dtype = torch.float16
     model = AutoModelForCausalLM.from_pretrained(
         "multimodalart/Florence-2-large-no-flash-attn", torch_dtype=torch_dtype, trust_remote_code=True
     ).to(device)
+    print("initialized pipe")
     processor = AutoProcessor.from_pretrained("multimodalart/Florence-2-large-no-flash-attn", trust_remote_code=True)
+    print("initialized processor")
 
     captions = list(captions)
+    print(f"captions={captions}")
     for i, image_path in enumerate(images):
         print(captions[i])
         if isinstance(image_path, str):  # If image is a file path
@@ -140,6 +144,7 @@ def run_captioning(images, concept_sentence, *captions):
             generated_text, task=prompt, image_size=(image.width, image.height)
         )
         caption_text = parsed_answer["<DETAILED_CAPTION>"].replace("The image shows ", "")
+        print(f"concept_sentence={concept_sentence}")
         if concept_sentence:
             caption_text = f"{caption_text} [trigger]"
         captions[i] = caption_text
