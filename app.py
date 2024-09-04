@@ -173,6 +173,11 @@ def recursive_update(d, u):
             d[k] = v
     return d
 
+
+def resolve_path(p)
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    return os.path.join(current_dir, p)
+
 def gen_sh(
     output_name,
     resolution,
@@ -194,13 +199,13 @@ def gen_sh(
         file_type = "bat"
 
     if model_to_train == "dev":
-        pretrained_model_path = "fluxtrainer/models/flux1-dev.sft"
+        pretrained_model_path = resolve_path("fluxtrainer/models/flux1-dev.sft")
     elif model_to_train == "schnell":
-        pretrained_model_path = "fluxtrainer/models/flux1-schnell.sft"
-    clip_path = "fluxtrainer/models/clip_l.safetensors"
-    t5_path = "fluxtrainer/models/t5xxl_fp16.safetensors"
-    ae_path = "fluxtrainer/models/ae.sft"
-    output_dir = "fluxtrainer/outputs"
+        pretrained_model_path = resolve_path("fluxtrainer/models/flux1-schnell.sft")
+    clip_path = resolve_path("fluxtrainer/models/clip_l.safetensors")
+    t5_path = resolve_path("fluxtrainer/models/t5xxl_fp16.safetensors")
+    ae_path = resolve_path("fluxtrainer/models/ae.sft")
+    output_dir = resolve_path("fluxtrainer/outputs")
 
     ############# Optimizer args ########################
 
@@ -218,8 +223,7 @@ def gen_sh(
 --optimizer_type adafactor
 --optimizer_args "relative_step=False" "scale_parameter=False" "warmup_init=False" --split_mode --network_args "train_blocks=single" --lr_scheduler constant_with_warmup --max_grad_norm 0.0
 """
-    sh = f"""
-accelerate launch {line_break}
+    sh = f"""accelerate launch {line_break}
   --mixed_precision bf16 {line_break}
   --num_cpu_threads_per_process 1 {line_break}
   flux_train_network.py {line_break}
@@ -230,7 +234,7 @@ accelerate launch {line_break}
   --cache_latents_to_disk {line_break}
   --save_model_as safetensors {line_break}
   --sdpa --persistent_data_loader_workers {line_break}
-  --max_data_loader_n_workers {workers} {line_break}
+  --max_data_loader_n_workers {workers.value} {line_break}
   --seed {seed} {line_break}
   --gradient_checkpointing {line_break}
   --mixed_precision bf16 {line_break}
@@ -244,14 +248,14 @@ accelerate launch {line_break}
   --cache_text_encoder_outputs_to_disk {line_break}
   --fp8_base {line_break}
   --highvram {line_break}
-  --max_train_epochs {max_train_epochs} {line_break}
-  --save_every_n_epochs {save_every_n_epochs} {line_break}
+  --max_train_epochs {max_train_epochs.value} {line_break}
+  --save_every_n_epochs {save_every_n_epochs.value} {line_break}
   --dataset_config dataset.toml {line_break}
   --output_dir {output_dir} {line_break}
   --output_name {output_name} {line_break}
-  --timestep_sampling {timestep_sampling} {line_break}
+  --timestep_sampling {timestep_sampling.value} {line_break}
   --model_prediction_type raw {line_break}
-  --guidance_scale {guidance_scale} {line_break}
+  --guidance_scale {guidance_scale.value} {line_break}
   --loss_type l2 {line_break}
   {optimizer}
 """
@@ -276,7 +280,7 @@ batch_size = 1
 keep_tokens = 1
 
   [[datasets.subsets]]
-  image_dir = {dataset_folder}
+  image_dir = {resolve_path(dataset_folder)}
   class_tokens = '{class_tokens}'
   num_repeats = 20
 """
