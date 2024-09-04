@@ -143,12 +143,16 @@ def run_captioning(images, concept_sentence, *captions):
         generated_ids = model.generate(
             input_ids=inputs["input_ids"], pixel_values=inputs["pixel_values"], max_new_tokens=1024, num_beams=3
         )
+        print(f"generated_ids={generated_ids}")
 
         generated_text = processor.batch_decode(generated_ids, skip_special_tokens=False)[0]
+        print(f"generated_text = {generated_text}")
         parsed_answer = processor.post_process_generation(
             generated_text, task=prompt, image_size=(image.width, image.height)
         )
+        print(f"parsed_ansswer={parsed_answer}")
         caption_text = parsed_answer["<DETAILED_CAPTION>"].replace("The image shows ", "")
+        print(f"caption_text={caption_text}")
         print(f"concept_sentence={concept_sentence}")
         if concept_sentence:
             caption_text = f"{caption_text} [trigger]"
