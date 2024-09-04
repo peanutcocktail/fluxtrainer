@@ -176,7 +176,7 @@ def recursive_update(d, u):
 
 def resolve_path(p):
     current_dir = os.path.dirname(os.path.abspath(__file__))
-    return os.path.join(current_dir, p)
+    return os.path.normpath(os.path.join(current_dir, p))
 
 def gen_sh(
     output_name,
