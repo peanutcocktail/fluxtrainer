@@ -151,6 +151,7 @@ def run_captioning(images, concept_sentence, *captions):
         if concept_sentence:
             caption_text = f"{caption_text} [trigger]"
         captions[i] = caption_text
+        print(f"captions={captions}")
 
         yield captions
     model.to("cpu")
