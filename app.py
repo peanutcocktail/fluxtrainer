@@ -1,5 +1,4 @@
 import os
-from huggingface_hub import whoami    
 os.environ["HF_HUB_ENABLE_HF_TRANSFER"] = "1"
 import sys
 
