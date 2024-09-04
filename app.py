@@ -120,6 +120,7 @@ def run_captioning(images, concept_sentence, *captions):
     print(f"captions {captions}")
     #Load internally to not consume resources for training
     device = "cuda" if torch.cuda.is_available() else "cpu"
+    print(f"device={device}")
     torch_dtype = torch.float16
     model = AutoModelForCausalLM.from_pretrained(
         "multimodalart/Florence-2-large-no-flash-attn", torch_dtype=torch_dtype, trust_remote_code=True
