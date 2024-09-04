@@ -304,7 +304,18 @@ def start_training(
     os.makedirs("fluxtrainer/outputs", exist_ok=True)
 
     # generate accelerate script
-    gen_sh(lora_name, resolution, seed, workers, learning_rate, model_to_train, max_train_epochs, save_every_n_epochs, timestep_sampling, guidance_scale)
+    gen_sh(
+      lora_name,
+      resolution,
+      seed, workers,
+      learning_rate,
+      network_dim,
+      model_to_train,
+      max_train_epochs,
+      save_every_n_epochs,
+      timestep_sampling,
+      guidance_scale
+    )
     # generate toml
     gen_toml(dataset_folder, resolution, class_tokens)
 
