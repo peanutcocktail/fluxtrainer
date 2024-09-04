@@ -412,7 +412,7 @@ with gr.Blocks(theme=theme, css=css) as demo:
         outputs=[captioning_area, sample, start]
     )
 
-    start.click(fn=create_dataset, inputs=[size, images] + caption_list, outputs=dataset_folder).then(
+    start.click(fn=create_dataset, inputs=[resolution, images] + caption_list, outputs=dataset_folder).then(
         fn=start_training,
         inputs=[
             lora_name,
