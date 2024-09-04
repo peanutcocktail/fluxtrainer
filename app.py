@@ -114,7 +114,8 @@ def create_dataset(size, *inputs):
 
 
 def run_captioning(images, concept_sentence, *captions):
-    print(f"run_captioning")
+    print(f"run_captioning, {images}, {concept_sentence}")
+    print(f"captions {captions}")
     #Load internally to not consume resources for training
     device = "cuda" if torch.cuda.is_available() else "cpu"
     torch_dtype = torch.float16
