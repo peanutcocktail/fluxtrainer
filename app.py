@@ -190,6 +190,7 @@ def gen_sh(
     save_every_n_epochs,
     timestep_sampling,
     guidance_scale,
+    vram,
 ):
 
     line_break = "\\"
@@ -209,20 +210,24 @@ def gen_sh(
 
     ############# Optimizer args ########################
 
-    # 24G+
-    optimizer = ""
-
-    # 16G
-    optimizer = f"""
+    if vram == "16G":
+        # 16G VRAM
+        optimizer = f"""
 --optimizer_type adafactor
 --optimizer_args "relative_step=False" "scale_parameter=False" "warmup_init=False"
 """
-
-    # 12G
-    optimizer = f"""
+    elif vram == "12G":
+    # 12G VRAM
+        optimizer = f"""
 --optimizer_type adafactor
 --optimizer_args "relative_step=False" "scale_parameter=False" "warmup_init=False" --split_mode --network_args "train_blocks=single" --lr_scheduler constant_with_warmup --max_grad_norm 0.0
 """
+    else:
+        # 24G+ VRAM
+        optimizer = ""
+
+
+
     sh = f"""accelerate launch {line_break}
   --mixed_precision bf16 {line_break}
   --num_cpu_threads_per_process 1 {line_break}
@@ -297,6 +302,7 @@ def start_training(
     network_dim,
     model_to_train,
     dataset_folder,
+    vram,
     sample_1,
     sample_2,
     sample_3,
@@ -318,7 +324,8 @@ def start_training(
       max_train_epochs,
       save_every_n_epochs,
       timestep_sampling,
-      guidance_scale
+      guidance_scale,
+      vram,
     )
     # generate toml
     gen_toml(dataset_folder, resolution, class_tokens)
@@ -346,6 +353,7 @@ with gr.Blocks(theme=theme, css=css) as demo:
                 placeholder="uncommon word like p3rs0n or trtcrd, or sentence like 'in the style of CNSTLL'",
                 interactive=True,
             )
+            vram = gr.Radio(["12G", "16G", "24G+", ], value="12G", label="VRAM")
         with gr.Group(visible=True) as image_upload:
             with gr.Row():
                 images = gr.File(
@@ -456,6 +464,7 @@ with gr.Blocks(theme=theme, css=css) as demo:
             network_dim,
             model_to_train,
             dataset_folder,
+            vram,
             sample_1,
             sample_2,
             sample_3,
