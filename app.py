@@ -303,7 +303,7 @@ def train():
     env = os.environ.copy()
     env['PYTHONIOENCODING'] = 'utf-8'
 
-    with subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, env=env) as process:
+    with subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, env=env) as process:
         for line in process.stdout:
             print(line.decode('utf-8', errors='replace'), end='')
 
