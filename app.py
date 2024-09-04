@@ -306,13 +306,7 @@ def train():
     with subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, env=env) as process:
         for line in process.stdout:
             print(line.decode('utf-8', errors='replace'), end='')
-
-    # Check for any errors after completion
-    process.communicate()  # Wait for the process to complete
-    if process.returncode != 0:
-        return f"Command failed with return code {process.returncode}"
-    else:
-        return "Train successful"
+        process.wait()  # Wait for the process to complete
 
 def start_training(
     lora_name,
