@@ -309,7 +309,7 @@ def train():
     # Check for any errors after completion
     process.communicate()  # Wait for the process to complete
     if process.returncode != 0:
-        return f"Command failed with return code {process.returncode}")
+        return f"Command failed with return code {process.returncode}"
     else:
         return "Train successful"
 
