@@ -254,7 +254,7 @@ def gen_sh(
   --highvram {line_break}
   --max_train_epochs {max_train_epochs.value} {line_break}
   --save_every_n_epochs {save_every_n_epochs.value} {line_break}
-  --dataset_config dataset.toml {line_break}
+  --dataset_config {resolve_path('fluxtrainer/dataset.toml')} {line_break}
   --output_dir {output_dir} {line_break}
   --output_name {output_name} {line_break}
   --timestep_sampling {timestep_sampling.value} {line_break}
