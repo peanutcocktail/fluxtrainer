@@ -298,20 +298,6 @@ keep_tokens = 1
 
 
 
-def train():
-    if sys.platform == "win32":
-        command = f"{resolve_path('fluxtrainer/train.bat')}"
-    else:
-        command = f"bash {resolve_path('fluxtrainer/train.sh')}"
-    print(f"command {command}")
-    # Use Popen to run the command and capture output in real-time
-    env = os.environ.copy()
-    env['PYTHONIOENCODING'] = 'utf-8'
-
-    with subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, env=env) as process:
-        for line in process.stdout:
-            print(line.decode('utf-8', errors='replace'), end='')
-        process.wait()  # Wait for the process to complete
 
 def start_training(
     lora_name,
@@ -351,10 +337,30 @@ def start_training(
     # generate toml
     gen_toml(dataset_folder, resolution, class_tokens)
 
-    train()
 
-    return f"Training completed successfully. Model saved as {output_name}"
+    # Train
+    if sys.platform == "win32":
+        command = f"{resolve_path('fluxtrainer/train.bat')}"
+    else:
+        command = f"bash {resolve_path('fluxtrainer/train.sh')}"
+    print(f"command {command}")
+    # Use Popen to run the command and capture output in real-time
+    env = os.environ.copy()
+    env['PYTHONIOENCODING'] = 'utf-8'
 
+    lines = []
+    lines_str = ""
+    with subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, env=env) as process:
+        for line in process.stdout:
+            decoded_line = line.decode('utf-8', errors='replace')
+            print(decoded_line, end='')
+
+            lines.append(decoded_line)
+            lines_str = f"<pre>{'\n'.join(lines)}</pre>"
+
+            yield lines_str
+        process.wait()  # Wait for the process to complete
+    yield lines_str
 
 theme = gr.themes.Monochrome(
     text_size=gr.themes.Size(lg="18px", md="15px", sm="13px", xl="22px", xs="12px", xxl="24px", xxs="9px"),
@@ -457,7 +463,8 @@ with gr.Blocks(theme=theme, css=css) as demo:
         output_components.append(sample_3)
         start = gr.Button("Start training", visible=False)
         output_components.append(start)
-        progress_area = gr.Markdown("")
+        terminal = gr.HTML("")
+        #progress_area = gr.Markdown("")
 
     dataset_folder = gr.State()
 
@@ -496,7 +503,8 @@ with gr.Blocks(theme=theme, css=css) as demo:
             sample_2,
             sample_3,
         ],
-        outputs=progress_area,
+        #outputs=progress_area,
+        outputs=terminal,
     )
 
     do_captioning.click(fn=run_captioning, inputs=[images, concept_sentence] + caption_list, outputs=caption_list)
