@@ -368,6 +368,8 @@ h3{margin-top: 0}
 with gr.Blocks(theme=theme, css=css) as demo:
     with gr.Column() as main_ui:
         with gr.Row():
+            total_steps = gr.Number(0, interactive=False, label="Expected training steps")
+        with gr.Row():
             lora_name = gr.Textbox(
                 label="The name of your LoRA",
                 info="This has to be a unique name",
@@ -382,7 +384,6 @@ with gr.Blocks(theme=theme, css=css) as demo:
             vram = gr.Radio(["20G", "16G", "12G" ], value="20G", label="VRAM")
             with gr.Column():
                 num_repeats = gr.Number(value=20, precision=0, label="Repeat trains per image")
-                total_steps = gr.Number(0, interactive=False, label="Expected training steps")
                 max_train_epochs = gr.Number(label="Max Train Epochs", value=16)
         with gr.Group(visible=True) as image_upload:
             with gr.Row():
