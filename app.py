@@ -383,7 +383,7 @@ with gr.Blocks(theme=theme, css=css) as demo:
             )
             vram = gr.Radio(["20G", "16G", "12G" ], value="20G", label="VRAM")
             with gr.Column():
-                num_repeats = gr.Number(value=20, precision=0, label="Repeat trains per image")
+                num_repeats = gr.Number(value=10, precision=0, label="Repeat trains per image")
                 max_train_epochs = gr.Number(label="Max Train Epochs", value=16)
         with gr.Group(visible=True) as image_upload:
             with gr.Row():
