@@ -57,7 +57,7 @@ def load_captioning(uploaded_files, concept_sentence):
                     corresponding_caption = file.read()
 
         # Update value of captioning area
-        text_value = corresponding_caption if visible and corresponding_caption else "[trigger]" if visible and concept_sentence else None
+        text_value = corresponding_caption if visible and corresponding_caption else concept_sentence if visible and concept_sentence else None
         updates.append(gr.update(value=text_value, visible=visible))
 
     # Update for the sample caption area
@@ -157,7 +157,7 @@ def run_captioning(images, concept_sentence, *captions):
         print(f"caption_text={caption_text}")
         print(f"concept_sentence={concept_sentence}")
         if concept_sentence:
-            caption_text = f"{caption_text} [trigger]"
+            caption_text = f"{caption_text}"
         captions[i] = caption_text
         print(f"captions={captions}")
 
@@ -210,22 +210,25 @@ def gen_sh(
     output_dir = resolve_path("fluxtrainer/outputs")
 
     ############# Optimizer args ########################
-
     if vram == "16G":
         # 16G VRAM
         optimizer = f"""--optimizer_type adafactor {line_break}
-  --optimizer_args "relative_step=False" "scale_parameter=False" "warmup_init=False"
+  --optimizer_args "relative_step=False" "scale_parameter=False" "warmup_init=False" {line_break}
+  --lr_scheduler constant_with_warmup {line_break}
+  --max_grad_norm 0.0
 """
     elif vram == "12G":
-    # 12G VRAM
+      # 12G VRAM
         optimizer = f"""--optimizer_type adafactor {line_break}
-  --optimizer_args "relative_step=False" "scale_parameter=False" "warmup_init=False" --split_mode --network_args "train_blocks=single" --lr_scheduler constant_with_warmup --max_grad_norm 0.0
+  --optimizer_args "relative_step=False" "scale_parameter=False" "warmup_init=False" {line_break}
+  --split_mode {line_break}
+  --network_args "train_blocks=single" {line_break}
+  --lr_scheduler constant_with_warmup {line_break}
+  --max_grad_norm 0.0
 """
     else:
         # 24G+ VRAM
         optimizer = ""
-
-
 
     sh = f"""accelerate launch {line_break}
   --mixed_precision bf16 {line_break}
@@ -247,7 +250,6 @@ def gen_sh(
   --network_dim 4 {line_break}
   --optimizer_type adamw8bit {line_break}
   --learning_rate {learning_rate} {line_break}
-  --network_train_unet_only {line_break}
   --cache_text_encoder_outputs {line_break}
   --cache_text_encoder_outputs_to_disk {line_break}
   --fp8_base {line_break}
@@ -258,11 +260,14 @@ def gen_sh(
   --output_dir {output_dir} {line_break}
   --output_name {output_name} {line_break}
   --timestep_sampling {timestep_sampling.value} {line_break}
+  --discrete_flow_shift 3.1582
   --model_prediction_type raw {line_break}
   --guidance_scale {guidance_scale.value} {line_break}
   --loss_type l2 {line_break}
   {optimizer}
 """
+
+  # customize mixed_precision, save_precision
 
     with open(f"fluxtrainer/train.{file_type}", 'w', encoding="utf-8") as file:
         file.write(sh)
@@ -356,6 +361,10 @@ theme = gr.themes.Monochrome(
     font=[gr.themes.GoogleFont("Source Sans Pro"), "ui-sans-serif", "system-ui", "sans-serif"],
 )
 css = """
+h1{font-size: 2em}
+h3{margin-top: 0}
+.tabitem{border: 0px}
+.group_padding{padding: .55em}
 """
 with gr.Blocks(theme=theme, css=css) as demo:
     with gr.Column() as main_ui:
@@ -386,7 +395,7 @@ with gr.Blocks(theme=theme, css=css) as demo:
                     with gr.Column():
                         gr.Markdown(
                             """# Custom captioning
-<p style="margin-top:0">You can optionally add a custom caption for each image (or use an AI model for this). [trigger] will represent your concept sentence/trigger word.</p>
+<p style="margin-top:0">Make sure the captions include the trigger word.</p>
 """, elem_classes="group_padding")
                         do_captioning = gr.Button("Add AI captions with Florence-2")
                         output_components = [captioning_area]
@@ -419,7 +428,7 @@ with gr.Blocks(theme=theme, css=css) as demo:
             #resolution = gr.Number(label="Resolution", value=512, minimum=512, maximum=1024, step=512)
             seed = gr.Number(label="Seed", value=42)
             workers = gr.Number(label="Workers", value=2)
-            learning_rate = gr.Number(label="Learning Rate", value=1e-4, minimum=1e-6, maximum=1e-3, step=1e-6)
+            learning_rate = gr.Textbox(label="Learning Rate", value="1e-4")
             #learning_rate = gr.Number(label="Learning Rate", value=4e-4, minimum=1e-6, maximum=1e-3, step=1e-6)
 
             max_train_epochs = gr.Number(label="Max Train Epochs", value=16)
@@ -427,7 +436,7 @@ with gr.Blocks(theme=theme, css=css) as demo:
 
             guidance_scale = gr.Number(label="Guidance Scale", value=1.0)
 
-            timestep_sampling = gr.Textbox(label="Timestep Sampling", value="sigmoid")
+            timestep_sampling = gr.Textbox(label="Timestep Sampling", value="shift")
 
 #            steps = gr.Number(label="Steps", value=1000, minimum=1, maximum=10000, step=1)
             network_dim = gr.Number(label="LoRA Rank", value=4, minimum=4, maximum=128, step=4)
