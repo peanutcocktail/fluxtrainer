@@ -354,7 +354,7 @@ def start_training(
     runner = LogsViewRunner()
     yield from runner.run_command([command])
     yield runner.log(f"Runner: {runner}")
-    process.wait()  # Wait for the process to complete
+#    process.wait()  # Wait for the process to complete
 
 #    with subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, env=env) as process:
 #        for line in process.stdout:
