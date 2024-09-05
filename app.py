@@ -60,17 +60,10 @@ def load_captioning(uploaded_files, concept_sentence):
         text_value = corresponding_caption if visible and corresponding_caption else concept_sentence if visible and concept_sentence else None
         updates.append(gr.update(value=text_value, visible=visible))
 
-    # Update for the sample caption area
-    updates.append(gr.update(visible=True))
-    # Update prompt samples
-    updates.append(gr.update(placeholder=f'A portrait of person in a bustling cafe {concept_sentence}', value=f'A person in a bustling cafe {concept_sentence}'))
-    updates.append(gr.update(placeholder=f"A mountainous landscape in the style of {concept_sentence}"))
-    updates.append(gr.update(placeholder=f"A {concept_sentence} in a mall"))
-    updates.append(gr.update(visible=True))
     return updates
 
 def hide_captioning():
-    return gr.update(visible=False), gr.update(visible=False), gr.update(visible=False)
+    return gr.update(visible=False), gr.update(visible=False)
 
 def resize_image(image_path, output_path, size):
     with Image.open(image_path) as img:
@@ -275,7 +268,8 @@ def gen_sh(
 def gen_toml(
   dataset_folder,
   resolution,
-  class_tokens
+  class_tokens,
+  num_repeats
 ):
     toml = f"""
 [general]
@@ -291,7 +285,7 @@ keep_tokens = 1
   [[datasets.subsets]]
   image_dir = '{resolve_path(dataset_folder)}'
   class_tokens = '{class_tokens}'
-  num_repeats = 20
+  num_repeats = {num_repeats}
 """
     with open('fluxtrainer/dataset.toml', 'w', encoding="utf-8") as file:
         file.write(toml)
@@ -310,9 +304,7 @@ def start_training(
     model_to_train,
     dataset_folder,
     vram,
-    sample_1,
-    sample_2,
-    sample_3,
+    num_repeats,
 ):
     # write custom script and toml
     os.makedirs("fluxtrainer", exist_ok=True)
@@ -335,7 +327,7 @@ def start_training(
       vram,
     )
     # generate toml
-    gen_toml(dataset_folder, resolution, class_tokens)
+    gen_toml(dataset_folder, resolution, class_tokens, num_repeats)
 
 
     # Train
@@ -395,6 +387,9 @@ with gr.Blocks(theme=theme, css=css) as demo:
                 interactive=True,
             )
             vram = gr.Radio(["20G", "16G", "12G" ], value="20G", label="VRAM")
+            with gr.Column():
+                num_repeats = gr.Number(value=20, precision=0, label="Repeat trains per image")
+                total_steps = gr.HTML("")
         with gr.Group(visible=True) as image_upload:
             with gr.Row():
                 images = gr.File(
@@ -457,18 +452,6 @@ with gr.Blocks(theme=theme, css=css) as demo:
             model_to_train = gr.Radio(["dev", "schnell"], value="dev", label="Model to train")
             resolution = gr.Radio([512, 1024], value=512, label="Resize dataset images")
 
-        with gr.Accordion("Sample prompts (optional)", visible=False) as sample:
-            gr.Markdown(
-                "Include sample prompts to test out your trained model. Don't forget to include your trigger word/sentence (optional)"
-            )
-            sample_1 = gr.Textbox(label="Test prompt 1")
-            sample_2 = gr.Textbox(label="Test prompt 2")
-            sample_3 = gr.Textbox(label="Test prompt 3")
-
-        output_components.append(sample)
-        output_components.append(sample_1)
-        output_components.append(sample_2)
-        output_components.append(sample_3)
         start = gr.Button("Start training", visible=False)
         output_components.append(start)
         terminal = LogsView()
@@ -491,8 +474,27 @@ with gr.Blocks(theme=theme, css=css) as demo:
 
     images.clear(
         hide_captioning,
-        outputs=[captioning_area, sample, start]
+        outputs=[captioning_area, start]
     )
+
+    num_repeats.change(
+        fn=update_total_steps,
+        inputs=[num_repeats, images],
+        outputs=total_steps
+    )
+    images.upload(
+        fn=update_total_steps,
+        inputs=[num_repeats, images],
+        outputs=total_steps
+    )
+
+    def update_total_steps(num_repeats, images):
+        print(f"update_total_steps {num_repeats}, {images}")
+        num_images = len(images)
+        total_steps = num_images * num_repeats
+        print(f"num_images={num_images}, num_repeats={num_repeats}, total_steps={total_steps}")
+        gr.update(value = total_steps)
+
 
     print(f"caption_list={caption_list}")
     start.click(fn=create_dataset, inputs=[resolution, images] + caption_list, outputs=dataset_folder).then(
@@ -508,9 +510,7 @@ with gr.Blocks(theme=theme, css=css) as demo:
             model_to_train,
             dataset_folder,
             vram,
-            sample_1,
-            sample_2,
-            sample_3,
+            num_repeats,
         ],
         #outputs=progress_area,
         outputs=terminal,
