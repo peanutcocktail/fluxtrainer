@@ -260,7 +260,7 @@ def gen_sh(
   --output_dir {output_dir} {line_break}
   --output_name {output_name} {line_break}
   --timestep_sampling {timestep_sampling.value} {line_break}
-  --discrete_flow_shift 3.1582
+  --discrete_flow_shift 3.1582 {line_break}
   --model_prediction_type raw {line_break}
   --guidance_scale {guidance_scale.value} {line_break}
   --loss_type l2 {line_break}
