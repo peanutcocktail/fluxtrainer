@@ -357,7 +357,7 @@ def start_training(
 
             lines.append(decoded_line)
 
-            joined = "\n".join(lines)
+            joined = "".join(lines)
             lines_str = f"<pre>{joined}</pre>"
 
             yield lines_str
