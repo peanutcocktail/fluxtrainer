@@ -356,7 +356,9 @@ def start_training(
             print(decoded_line, end='')
 
             lines.append(decoded_line)
-            lines_str = f"<pre>{'\n'.join(lines)}</pre>"
+
+            joined = "\n".join(lines)
+            lines_str = f"<pre>{joined}</pre>"
 
             yield lines_str
         process.wait()  # Wait for the process to complete
