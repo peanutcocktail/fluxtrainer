@@ -62,6 +62,7 @@ def load_captioning(uploaded_files, concept_sentence):
 
     # Update for the sample caption area
     updates.append(gr.update(visible=True))
+    updates.append(gr.update(visible=True))
 
     return updates
 
