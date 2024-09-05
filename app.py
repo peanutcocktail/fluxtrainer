@@ -17,6 +17,7 @@ import yaml
 from slugify import slugify
 from transformers import AutoProcessor, AutoModelForCausalLM
 from gradio_logsview import LogsView, LogsViewRunner
+from huggingface_hub import hf_hub_download
 
 MAX_IMAGES = 150
 
@@ -184,8 +185,10 @@ def gen_sh(
 
     if model_to_train == "dev":
         pretrained_model_path = resolve_path("fluxtrainer/models/flux1-dev.sft")
+        hf_hub_download(repo_id="cocktailpeanut/xulf-schnell", filename="flux1-schnell.sft", local_dir=resolve_path("fluxtrainer/models"))
     elif model_to_train == "schnell":
         pretrained_model_path = resolve_path("fluxtrainer/models/flux1-schnell.sft")
+        hf_hub_download(repo_id="cocktailpeanut/xulf-schnell", filename="flux1-schnell.sft", local_dir=resolve_path("fluxtrainer/models"))
     clip_path = resolve_path("fluxtrainer/models/clip_l.safetensors")
     t5_path = resolve_path("fluxtrainer/models/t5xxl_fp16.safetensors")
     ae_path = resolve_path("fluxtrainer/models/ae.sft")
