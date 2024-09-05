@@ -227,7 +227,7 @@ def gen_sh(
   --max_grad_norm 0.0
 """
     else:
-        # 24G+ VRAM
+        # 20G+ VRAM
         optimizer = ""
 
     sh = f"""accelerate launch {line_break}
@@ -394,7 +394,7 @@ with gr.Blocks(theme=theme, css=css) as demo:
                 placeholder="uncommon word like p3rs0n or trtcrd, or sentence like 'in the style of CNSTLL'",
                 interactive=True,
             )
-            vram = gr.Radio(["12G", "16G", "24G+", ], value="12G", label="VRAM")
+            vram = gr.Radio(["20G", "16G", "12G" ], value="20G", label="VRAM")
         with gr.Group(visible=True) as image_upload:
             with gr.Row():
                 images = gr.File(
