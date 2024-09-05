@@ -157,7 +157,7 @@ def run_captioning(images, concept_sentence, *captions):
         print(f"caption_text={caption_text}")
         print(f"concept_sentence={concept_sentence}")
         if concept_sentence:
-            caption_text = f"{caption_text}"
+            caption_text = f"{concept_sentence} {caption_text}"
         captions[i] = caption_text
         print(f"captions={captions}")
 
