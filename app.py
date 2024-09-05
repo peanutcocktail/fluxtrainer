@@ -16,7 +16,7 @@ import json
 import yaml
 from slugify import slugify
 from transformers import AutoProcessor, AutoModelForCausalLM
-
+from gradio_logsview import LogsView, LogsViewRunner
 
 MAX_IMAGES = 150
 
@@ -350,19 +350,25 @@ def start_training(
 
     lines = []
     lines_str = ""
-    with subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, env=env) as process:
-        for line in process.stdout:
-            decoded_line = line.decode('utf-8', errors='replace')
-            print(decoded_line, end='')
 
-            lines.append(decoded_line)
+    runner = LogsViewRunner()
+    yield from runner.run_command([command])
+    yield runner.log(f"Runner: {runner}")
+    process.wait()  # Wait for the process to complete
 
-            joined = "".join(lines)
-            lines_str = f"<pre>{joined}</pre>"
-
-            yield lines_str
-        process.wait()  # Wait for the process to complete
-    yield lines_str
+#    with subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, env=env) as process:
+#        for line in process.stdout:
+#            decoded_line = line.decode('utf-8', errors='replace')
+#            print(decoded_line, end='')
+#
+#            lines.append(decoded_line)
+#
+#            joined = "".join(lines)
+#            lines_str = f"<pre>{joined}</pre>"
+#
+#            yield lines_str
+#        process.wait()  # Wait for the process to complete
+#    yield lines_str
 
 theme = gr.themes.Monochrome(
     text_size=gr.themes.Size(lg="18px", md="15px", sm="13px", xl="22px", xs="12px", xxl="24px", xxs="9px"),
@@ -465,7 +471,8 @@ with gr.Blocks(theme=theme, css=css) as demo:
         output_components.append(sample_3)
         start = gr.Button("Start training", visible=False)
         output_components.append(start)
-        terminal = gr.HTML("")
+        terminal = LogsView()
+
         #progress_area = gr.Markdown("")
 
     dataset_folder = gr.State()
