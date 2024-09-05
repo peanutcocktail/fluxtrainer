@@ -291,6 +291,12 @@ keep_tokens = 1
         file.write(toml)
 
 
+def update_total_steps(num_repeats, images):
+    print(f"update_total_steps {num_repeats}, {images}")
+    num_images = len(images)
+    total_steps = num_images * num_repeats
+    print(f"num_images={num_images}, num_repeats={num_repeats}, total_steps={total_steps}")
+    gr.update(value = total_steps)
 
 
 def start_training(
@@ -389,7 +395,7 @@ with gr.Blocks(theme=theme, css=css) as demo:
             vram = gr.Radio(["20G", "16G", "12G" ], value="20G", label="VRAM")
             with gr.Column():
                 num_repeats = gr.Number(value=20, precision=0, label="Repeat trains per image")
-                total_steps = gr.HTML("")
+                total_steps = gr.HTML("", label="Total steps")
         with gr.Group(visible=True) as image_upload:
             with gr.Row():
                 images = gr.File(
@@ -488,12 +494,6 @@ with gr.Blocks(theme=theme, css=css) as demo:
         outputs=total_steps
     )
 
-    def update_total_steps(num_repeats, images):
-        print(f"update_total_steps {num_repeats}, {images}")
-        num_images = len(images)
-        total_steps = num_images * num_repeats
-        print(f"num_images={num_images}, num_repeats={num_repeats}, total_steps={total_steps}")
-        gr.update(value = total_steps)
 
 
     print(f"caption_list={caption_list}")
