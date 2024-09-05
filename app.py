@@ -300,7 +300,7 @@ def update_total_steps(num_repeats, images):
     num_images = len(images)
     total_steps = num_images * num_repeats
     print(f"num_images={num_images}, num_repeats={num_repeats}, total_steps={total_steps}")
-    gr.update(value = total_steps)
+    return gr.update(value = total_steps)
 
 
 def start_training(
