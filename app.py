@@ -169,7 +169,6 @@ def gen_sh(
     workers,
     learning_rate,
     network_dim,
-    model_to_train,
     max_train_epochs,
     save_every_n_epochs,
     timestep_sampling,
@@ -183,12 +182,7 @@ def gen_sh(
         line_break = "^"
         file_type = "bat"
 
-    if model_to_train == "dev":
-        pretrained_model_path = resolve_path("fluxtrainer/models/flux1-dev.sft")
-        hf_hub_download(repo_id="cocktailpeanut/xulf-schnell", filename="flux1-schnell.sft", local_dir=resolve_path("fluxtrainer/models"))
-    elif model_to_train == "schnell":
-        pretrained_model_path = resolve_path("fluxtrainer/models/flux1-schnell.sft")
-        hf_hub_download(repo_id="cocktailpeanut/xulf-schnell", filename="flux1-schnell.sft", local_dir=resolve_path("fluxtrainer/models"))
+    pretrained_model_path = resolve_path("fluxtrainer/models/flux1-dev.sft")
     clip_path = resolve_path("fluxtrainer/models/clip_l.safetensors")
     t5_path = resolve_path("fluxtrainer/models/t5xxl_fp16.safetensors")
     ae_path = resolve_path("fluxtrainer/models/ae.sft")
@@ -298,7 +292,6 @@ def start_training(
 #    steps,
     learning_rate,
     network_dim,
-    model_to_train,
     dataset_folder,
     vram,
     num_repeats,
@@ -316,7 +309,6 @@ def start_training(
       seed, workers,
       learning_rate,
       network_dim,
-      model_to_train,
       max_train_epochs,
       save_every_n_epochs,
       timestep_sampling,
@@ -446,7 +438,6 @@ with gr.Blocks(theme=theme, css=css) as demo:
 
 #            steps = gr.Number(label="Steps", value=1000, minimum=1, maximum=10000, step=1)
             network_dim = gr.Number(label="LoRA Rank", value=4, minimum=4, maximum=128, step=4)
-            model_to_train = gr.Radio(["dev", "schnell"], value="dev", label="Model to train")
             resolution = gr.Radio([512, 1024], value=512, label="Resize dataset images")
 
         start = gr.Button("Start training", visible=False)
@@ -514,7 +505,6 @@ with gr.Blocks(theme=theme, css=css) as demo:
 #            steps,
             learning_rate,
             network_dim,
-            model_to_train,
             dataset_folder,
             vram,
             num_repeats,
